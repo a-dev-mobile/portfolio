@@ -2,7 +2,7 @@
 const isLocalBuild = process.env.IS_LOCAL === "true";
 
 const nextConfig = {
-  basePath: isLocalBuild ? "" : "/portfolio-ru",
+  basePath: isLocalBuild ? "" : "",
   output: "export",
 };
 
