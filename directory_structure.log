@@ -15,12 +15,22 @@ portfolio-ru/
     │   │       └── page.tsx
     │   ├── components/
     │   │   ├── Header.tsx
+    │   │   ├── NavLink.tsx
     │   │   ├── Navbar.tsx
+    │   │   ├── ProjectCard.tsx
     │   │   ├── Provider.tsx
     │   │   └── ThemeButton.tsx
     │   ├── favicon.ico
     │   ├── globals.css
-    │   └── layout.tsx
+    │   ├── hooks/
+    │   │   ├── useMediaQuery.ts
+    │   │   └── useScrollPosition.ts
+    │   ├── layout.tsx
+    │   ├── lib/
+    │   │   └── utils.ts
+    │   └── types/
+    │       ├── nav.ts
+    │       └── project.ts
     ├── next-env.d.ts
     ├── next.config.js
     ├── package-lock.json
@@ -85,8 +95,9 @@ Content of tsconfig.json:
       }
     ],
     "paths": {
-      "@/*": ["./*"]
-    }
+      "@/*": ["./app/*"]
+    },
+    "baseUrl": "."
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
@@ -118,11 +129,13 @@ Content of package.json:
     "lint": "next lint"
   },
   "dependencies": {
-    "@headlessui/react": "^2.0.3",
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
     "@types/node": "20.12.11",
     "@types/react": "18.3.2",
     "@types/react-dom": "18.3.0",
     "autoprefixer": "10.4.19",
+    "clsx": "^2.1.1",
     "eslint": "8.0.0",
     "eslint-config-next": "14.2.3",
     "next": "14.2.3",
@@ -130,7 +143,7 @@ Content of package.json:
     "postcss": "8.4.38",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-
+    "tailwind-merge": "^3.0.1",
     "tailwindcss": "3.4.3",
     "typescript": "5.4.5"
   },
@@ -180,17 +193,39 @@ CMD ["nginx", "-g", "daemon off;"]
 ========================================
 Content of app/layout.tsx:
 ========================================
-import './globals.css'
-import type { Metadata } from 'next'
+// Layout.tsx improvements
+import { Metadata } from 'next'
 import { Montserrat } from 'next/font/google'
-import NavBar from './components/Navbar'
 import { Provider } from './components/Provider'
+import NavBar from './components/Navbar'
+import './globals.css'
 
-const font = Montserrat({ subsets: ['latin'] })
+const montserrat = Montserrat({ 
+  subsets: ['latin', 'cyrillic'],
+  display: 'swap',
+  variable: '--font-montserrat'
+})
 
 export const metadata: Metadata = {
+  title: {
+    default: 'Dmitriy Trofimov - Portfolio',
+    template: '%s | Dmitriy Trofimov'
+  },
+  description: 'Senior Full Stack Developer specializing in Flutter, Go and Web Development',
+  keywords: ['Flutter Developer', 'Go Developer', 'Full Stack', 'Mobile Development'],
+  authors: [{ name: 'Dmitriy Trofimov' }],
+  openGraph: {
   title: 'Dmitriy Trofimov - Portfolio',
-  description: 'For my own understanding of what I have achieved',
+    description: 'Senior Full Stack Developer specializing in Flutter, Go and Web Development',
+    url: 'https://your-domain.com',
+    siteName: 'Dmitriy Trofimov Portfolio',
+    locale: 'ru_RU',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({
@@ -199,26 +234,32 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      
-      <body className={`${font.className} 
+    <html lang="ru" suppressHydrationWarning className={montserrat.variable}>
+      <body className={`
+        font-sans
       bg-white dark:bg-[#090908]
       text-black dark:text-white 
       selection:bg-gray-300 dark:selection:bg-gray-700
-      h-full
+        min-h-screen flex flex-col
        `}>
         <Provider>
           <NavBar />
-          <main className='max-w-6xl mx-auto px-4 '>
+          <main className="max-w-6xl mx-auto px-4 flex-grow">
             {children}
-
           </main>
-
         </Provider>
       </body>
     </html>
   )
 }
+
+========================================
+Content of app/globals.css:
+========================================
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 
 
 ========================================
@@ -696,179 +737,241 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 export default Header
 
 ========================================
+Content of app/components/ProjectCard.tsx:
+========================================
+'use client'
+
+import Image from 'next/image'
+import { useState } from 'react'
+import { cn } from '../lib/utils'
+import type { Project } from '../types/project'
+
+interface ProjectCardProps {
+  project: Project
+  priority?: boolean
+}
+
+export function ProjectCard({ project, priority = false }: ProjectCardProps) {
+  const [imageError, setImageError] = useState(false)
+
+  return (
+    <div className={cn(
+      "h-full overflow-hidden flex flex-col",
+      "border border-gray-100 dark:border-zinc-600 rounded-lg",
+      "bg-white dark:bg-black",
+      "shadow-lg dark:shadow-gray-700 shadow-teal-100",
+      "transition-transform hover:scale-[1.02]"
+    )}>
+      <div className="relative aspect-video">
+        <Image
+          src={!imageError ? `/projects/${project.id}.png` : '/placeholder.png'}
+          alt={project.name}
+          className="object-cover"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority={priority}
+          onError={() => setImageError(true)}
+        />
+      </div>
+
+      <div className="p-4 flex-1 flex flex-col">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          {project.name}
+        </h3>
+        
+        <p className="text-sm text-gray-500 dark:text-gray-400 flex-1">
+          {project.description}
+        </p>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {project.technologies.map((tech: string) => (
+            <span 
+              key={tech}
+              className="px-2 py-1 text-xs rounded-full bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
+            >
+              {tech}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {project.storeLink && (
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+          <a
+            href={project.storeLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 text-teal-600 hover:text-teal-700"
+          >
+            {project.storeIcon && (
+              <Image 
+                src={project.storeIcon} 
+                alt="" 
+                width={24} 
+                height={24} 
+                className="w-6 h-6"
+              />
+            )}
+            View in Store
+          </a>
+        </div>
+      )}
+    </div>
+  )
+}
+
+========================================
 Content of app/components/Navbar.tsx:
 ========================================
 'use client'
 
-import { Disclosure } from "@headlessui/react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import path from "path";
-import Themebutton from "./ThemeButton";
-import React from "react";
-const NavBar = () => {
+import { Disclosure } from '@headlessui/react'
+import { usePathname } from 'next/navigation'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { NavLink } from './NavLink'
+import ThemeButton from './ThemeButton'
+import { cn } from '../lib/utils'
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
-    interface NavLinkProps {
-        href: string;
-        label: string;
-    }
-    const [isScrolled, setIsScrolled] = React.useState(false);
+const navItems = [
+  { href: '/', label: 'Обо мне' },
+  { href: '/pet-projects', label: 'Личные проекты' },
+] as const
 
-    React.useEffect(() => {
+export default function NavBar() {
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
         const handleScroll = () => {
-            // Например, показывать элемент, если страница прокручена более чем на 10px
-            if (window.scrollY > 10) {
-                setIsScrolled(true);
-            } else {
-                setIsScrolled(false);
-            }
-        };
-
-        window.addEventListener("scroll", handleScroll);
-
-    
-        return () => {
-            window.removeEventListener("scroll", handleScroll);
-        };
-    }, []);
-
-    const NavLink: React.FC<NavLinkProps> = ({ href, label }) => {
-
-        const isActive = pathname === href;
-        return (<Link href={href} prefetch className={`${isActive
-            ? 'border-teal-500 h-full inline-flex items-center border-b-2 text-sm font-medium px-2 pt-1'
-            : 'border-transparent hover:text-black  dark:text-gray-300 text-gray-500 h-full inline-flex items-center border-b-2 dark:hover:text-white text-sm px-2 pt-1 '
-            }`}>
-            {label}
-        </Link>);
-
+      setIsScrolled(window.scrollY > 10)
     }
-    const navLinks = (
-        <>
-          <NavLink href='/' label='Обо мне' />
-          <NavLink href='/pet-projects' label='Личные проекты' />
-         
-        </>
-      );
-    const pathname = usePathname() || '/'
-    return (<Disclosure as='nav' className=''>
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  return (
+    <Disclosure as="nav" className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-sm">
         {({ open }) => (
             <>
-                <div className="max-w-6xl mx-auto px-1 ">
-                    <div className="flex justify-between h-16">
-                        <div className="flex justify-between w-full">
-                            <div className="flex items-center">
-                                <Link href='/'>
-                                    <h1 className="text-2xl font-medium px-3">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="flex h-16 justify-between items-center">
+              <Link 
+                href="/"
+                className="text-2xl font-medium hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
                                         Dmitriy <span className="text-teal-500">Trofimov</span>
-                                    </h1>
                                 </Link>
 
+              <div className="hidden md:flex md:items-center space-x-8">
+                {navItems.map((item) => (
+                  <NavLink key={item.href} {...item} />
+                ))}
+                <ThemeButton />
                             </div>
-                            <div className="hidden md:flex md:items-center gap-x-5 ">
 
-                            {navLinks}
-                                <div className="ml-2">
-                                    <Themebutton />
-
-
-                                </div>
-                            </div>
-                            <div className=" md:hidden flex items-center gap-1">
-                                <Themebutton />
-                                <Disclosure.Button className='inline-flex text-gray-400 
-                                 hover:text-gray-500
-                                 hover:bg-gray-200
-                                 p-2 rounded-lg
-                                dark:hover:bg-gray-800
-                                
-                                 focus:ring-2 
-                                focus:ring-teal-500'>
-
+              <div className="flex md:hidden items-center gap-2">
+                <ThemeButton />
+                <Disclosure.Button 
+                  className={cn(
+                    "p-2 rounded-lg text-gray-500",
+                    "hover:bg-gray-100 hover:text-gray-900",
+                    "dark:hover:bg-gray-800 dark:hover:text-white",
+                    "focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  )}
+                >
+                  <span className="sr-only">
+                    {open ? 'Close main menu' : 'Open main menu'}
+                  </span>
                                     {open ? (
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="w-6 h-6">
-                                            <path strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-
-                                    ) : (<svg xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-6 h-6">
-                                        <path strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                                    </svg>
-
-                                    )}
-
-
-
+                    <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                  ) : (
+                    <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                  )}
                                 </Disclosure.Button>
-
                             </div>
                         </div>
                     </div>
-                    <Disclosure.Panel className={
-                        isScrolled ? 
-                        'md:hidden fixed top-0  w-full z-10 bg-white p-2 dark:bg-black' 
-                        : 'md:hidden '}>
-                        <div className="flex justify-around ">
 
-                        {navLinks}
-
+          <Disclosure.Panel 
+            className={cn(
+              "md:hidden",
+              isScrolled && "fixed top-16 inset-x-0 bg-white dark:bg-black"
+            )}
+          >
+            <div className="space-y-1 px-4 pb-3 pt-2">
+              {navItems.map((item) => (
+                <NavLink key={item.href} {...item} />
+              ))}
                         </div>
-
                     </Disclosure.Panel>
-
-                </div>
-
-            </>
-
-
-
-        )}
-
-
-
-    </Disclosure>);
+        </>
+      )}
+    </Disclosure>
+  )
 }
 
-export default NavBar;
+========================================
+Content of app/components/NavLink.tsx:
+========================================
+'use client'
 
-Directory File Count: 20
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { NavLinkProps } from '../types/nav'
+import { cn } from '../lib/utils'
+
+export const NavLink: React.FC<NavLinkProps> = ({ href, label, exact = true }) => {
+  const pathname = usePathname()
+  const isActive = exact ? pathname === href : pathname.startsWith(href)
+  
+  return (
+    <Link 
+      href={href}
+      className={cn(
+        'h-full inline-flex items-center border-b-2 text-sm font-medium px-2 pt-1 transition-colors',
+        isActive
+          ? 'border-teal-500 text-gray-900 dark:text-white'
+          : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+      )}
+      aria-current={isActive ? 'page' : undefined}
+    >
+      {label}
+    </Link>
+  )
+}
+
+Directory File Count: 34
 
 +------------+-------------------------------------------------------------------------------+
 | File Count | Directory                                                                     |
 +------------+-------------------------------------------------------------------------------+
-|         10 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app                        |
-|          4 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/components             |
+|         17 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app                        |
+|          6 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/components             |
 |          3 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/(routes)               |
+|          2 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/types                  |
+|          2 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/hooks                  |
+|          1 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/lib                    |
 |          1 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/(routes)/work-projects |
 |          1 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/(routes)/pet-projects  |
 |          1 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/(routes)/(about me)    |
 +------------+-------------------------------------------------------------------------------+
 
-File Character Counts: 25113 characters
+File Character Counts: 27060 characters
 
 +-----------------+-------------------------------------+
 | Character Count | File Path                           |
 +-----------------+-------------------------------------+
 |            9540 | app/(routes)/(about me)/page.tsx    |
-|            5213 | app/components/Navbar.tsx           |
 |            4427 | app/(routes)/pet-projects/page.tsx  |
+|            3112 | app/components/Navbar.tsx           |
+|            2377 | app/components/ProjectCard.tsx      |
+|            1615 | app/layout.tsx                      |
 |            1599 | app/components/ThemeButton.tsx      |
-|             921 | app/layout.tsx                      |
-|             722 | package.json                        |
-|             595 | tsconfig.json                       |
+|             809 | package.json                        |
+|             806 | app/components/NavLink.tsx          |
+|             619 | tsconfig.json                       |
 |             459 | app/(routes)/work-projects/page.tsx |
 |             446 | app/components/Header.tsx           |
 |             372 | tailwind.config.ts                  |
@@ -876,5 +979,6 @@ File Character Counts: 25113 characters
 |             233 | app/components/Provider.tsx         |
 |             206 | next.config.js                      |
 |              82 | postcss.config.js                   |
+|              60 | app/globals.css                     |
 |              40 | .eslintrc.json                      |
 +-----------------+-------------------------------------+

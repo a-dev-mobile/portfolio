@@ -21,6 +21,7 @@ FILE_NAMES=(
     "package.json"
     "next.config.js"
     ".eslintrc.json"
+    "*.css"
     "Dockerfile"
 )
 EXCLUDE=(
