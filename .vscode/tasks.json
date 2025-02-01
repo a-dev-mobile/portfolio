@@ -34,25 +34,7 @@
     },
    
    
-    {
-      "label": "Generate Directory Tree With Contents",
-      "type": "shell",
-      "command": "dotnet",
-      "args": [
-        "c:/DEV/MY/MY_GITHUB/GenerateDirectoryTree/bin/Release/net8.0/GenerateDirectoryTree.dll",
-        "--scanDir",
-        "c:/DEV/MY/MY_GITHUB/wayofdt-projects",
-        "--exclude",
-        "bin | obj | .vscode | .vs | .git | .gitignore | Migrations | .dockerignore | .github | LICENSE | README.md | .next | node_modules | public | build | assets | package-lock.json | favicon.ico | FileTree.txt",
-        "--showContents"
-      ],
-      "problemMatcher": "$msCompile",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "clear": true
-      }
-    },
+   
 
   ]
 }

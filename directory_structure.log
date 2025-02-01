@@ -1,0 +1,880 @@
+Directory Structure:
+
+portfolio-ru/
+    ├── .eslintrc.json
+    ├── .gitignore
+    ├── Dockerfile
+    ├── README.md
+    ├── app/
+    │   ├── (routes)/
+    │   │   ├── (about me)/
+    │   │   │   └── page.tsx
+    │   │   ├── pet-projects/
+    │   │   │   └── page.tsx
+    │   │   └── work-projects/
+    │   │       └── page.tsx
+    │   ├── components/
+    │   │   ├── Header.tsx
+    │   │   ├── Navbar.tsx
+    │   │   ├── Provider.tsx
+    │   │   └── ThemeButton.tsx
+    │   ├── favicon.ico
+    │   ├── globals.css
+    │   └── layout.tsx
+    ├── next-env.d.ts
+    ├── next.config.js
+    ├── package-lock.json
+    ├── package.json
+    ├── postcss.config.js
+    ├── tailwind.config.ts
+    └── tsconfig.json
+
+Files Content:
+
+========================================
+Content of tailwind.config.ts:
+========================================
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  darkMode: 'class',
+  theme: {
+    extend: {
+
+    },
+  },
+  plugins: [require("@tailwindcss/typography"), require("@tailwindcss/forms")],
+}
+export default config
+
+
+========================================
+Content of .eslintrc.json:
+========================================
+{
+  "extends": "next/core-web-vitals"
+}
+
+
+========================================
+Content of tsconfig.json:
+========================================
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+
+
+========================================
+Content of postcss.config.js:
+========================================
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+
+
+========================================
+Content of package.json:
+========================================
+{
+  "name": "portfolio-ru",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.0.3",
+    "@types/node": "20.12.11",
+    "@types/react": "18.3.2",
+    "@types/react-dom": "18.3.0",
+    "autoprefixer": "10.4.19",
+    "eslint": "8.0.0",
+    "eslint-config-next": "14.2.3",
+    "next": "14.2.3",
+    "next-themes": "^0.3.0",
+    "postcss": "8.4.38",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+
+    "tailwindcss": "3.4.3",
+    "typescript": "5.4.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.13"
+  }
+}
+
+
+========================================
+Content of next.config.js:
+========================================
+/** @type {import('next').NextConfig} */
+const isLocalBuild = process.env.IS_LOCAL === "true";
+
+const nextConfig = {
+  basePath: isLocalBuild ? "" : "",
+  output: "export",
+};
+
+module.exports = nextConfig;
+
+
+========================================
+Content of Dockerfile:
+========================================
+FROM node:20-bullseye AS build
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Этап запуска (runtime stage)
+FROM nginx:alpine
+
+COPY --from=build /app/out /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+
+
+========================================
+Content of app/layout.tsx:
+========================================
+import './globals.css'
+import type { Metadata } from 'next'
+import { Montserrat } from 'next/font/google'
+import NavBar from './components/Navbar'
+import { Provider } from './components/Provider'
+
+const font = Montserrat({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'Dmitriy Trofimov - Portfolio',
+  description: 'For my own understanding of what I have achieved',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      
+      <body className={`${font.className} 
+      bg-white dark:bg-[#090908]
+      text-black dark:text-white 
+      selection:bg-gray-300 dark:selection:bg-gray-700
+      h-full
+       `}>
+        <Provider>
+          <NavBar />
+          <main className='max-w-6xl mx-auto px-4 '>
+            {children}
+
+          </main>
+
+        </Provider>
+      </body>
+    </html>
+  )
+}
+
+
+========================================
+Content of app/(routes)/work-projects/page.tsx:
+========================================
+import Header from "@/app/components/Header"
+import Image from 'next/image'
+
+
+interface Project {
+  id: number;
+  name: string;
+  description: string;
+
+  storeIcon?: string; 
+  storeLink?: string;
+}
+
+
+const WorkProgects = () => {
+
+  return (
+    <Header title='В разработке'>
+     
+
+
+
+
+            <div className="flex  justify-center   border-t border-gray-200 dark:border-gray-700 p-1 ">
+
+
+
+
+      </div>
+    </Header>
+  );
+}
+
+export default WorkProgects;
+
+
+
+========================================
+Content of app/(routes)/pet-projects/page.tsx:
+========================================
+import Header from "@/app/components/Header"
+import Image from 'next/image'
+
+
+interface Project {
+  id: number;
+  name: string;
+  description: string;
+
+  storeIcon?: string;
+  storeLink?: string;
+}
+
+
+const AllProgects = () => {
+
+
+  const projects3 = [10, 9, 1, 4, 5, 6, 7, 8, 2, 3];
+
+  // Пример данных для проектов
+  const iconGooglePlay = './svg/google-play.svg'
+  const iconTelegram = './svg/telegram.svg'
+  const projects: Project[] = [
+    {
+      id: 10,
+      name: "KidneySmart",
+      description: 'Приложение для мониторинга питания при диализе и проблемах с почками',
+
+
+    },
+    {
+      id: 9,
+      name: "ГОСТ ISO Метрическая резьба",
+      description: "Приложение для машиностроительной резьбы",
+      storeIcon: iconGooglePlay,
+      storeLink: 'https://play.google.com/store/apps/details?id=a.dev.mobile.threadfon'
+
+
+    },
+    {
+      id: 11,
+      name: "ProxyFinderBot",
+      description: "Телеграм бот ищет прокси из общедоступных источников",
+
+      storeIcon: iconTelegram,
+      storeLink: 'https://t.me/turngenbot'
+
+    },
+    {
+      id: 1,
+      name: "Геометрические допуски",
+      description: "Справочник по геометрическим допускам в машиностроении. На основе ГОСТ Р 53442–2015",
+
+      storeIcon: iconGooglePlay,
+      storeLink: 'https://play.google.com/store/apps/details?id=a.dev.mobile_geometricaltolerance'
+
+    },
+    {
+      id: 4,
+      name: "CncCalc",
+      description: "Калькулятор для станков с числовым программным управлением",
+
+      storeIcon: iconGooglePlay,
+      storeLink: 'https://play.google.com/store/apps/details?id=a.dev.mobile_cnc'
+    },
+    {
+      id: 5,
+      name: "InsertInfo",
+      description: "Руководство по износу для металлорежущих пластин",
+
+
+      storeIcon: iconGooglePlay,
+      storeLink: 'https://play.google.com/store/apps/details?id=a.dev.mobile_insert_wear'
+
+
+    },
+    {
+      id: 6,
+      name: "Резьба UN/ISO/Tr",
+      description: "Руководство по параметрам для различных резьб",
+
+      storeIcon: iconGooglePlay,
+      storeLink: 'https://play.google.com/store/apps/details?id=a.dev.mobile_threadpro'
+
+
+    },
+    {
+      id: 7,
+      name: "G - Трубная цилиндрическая резьба",
+      description: "Руководство по параметрам трубной резьбы",
+
+      storeIcon: iconGooglePlay,
+      storeLink: 'https://play.google.com/store/apps/details?id=a.dev.mobile.gthread'
+
+    },
+    {
+      id: 8,
+      name: "TriangleCalc",
+      description: "Калькулятор расчета параметров треугольника",
+
+
+      storeIcon: iconGooglePlay,
+      storeLink: 'https://play.google.com/store/apps/details?id=a.dev.calc_triangle'
+    },
+    {
+      id: 2,
+      name: "Квалитеты и допуски",
+      description: "Справочник по основным допускам в машиностроении",
+
+
+      storeIcon: iconGooglePlay,
+      storeLink: 'https://play.google.com/store/apps/details?id=a.dev.mobile_tolerance'
+    },
+    {
+      id: 3,
+      name: "Расчёт углов",
+      description: "Калькулятор угла прямоугольного треугольника",
+
+      storeIcon: iconGooglePlay,
+      storeLink: 'https://play.google.com/store/apps/details?id=a.dev.mobile_angle_and_triangle'
+
+    },
+  ];
+
+  return (
+    <Header title='Личные проекты'>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pt-8">
+        {projects.map((project) => (
+          <div key={project.id} className="h-full overflow-hidden flex flex-col 
+           dark:border-zinc-600 rounded-lg border border-gray-100 bg-white shadow-lg
+            dark:bg-black dark:shadow-gray-700 shadow-teal-100">
+            <Image
+              alt='My project'
+              src={`./projects/${project.id}.png`}
+              className='w-full '
+              unoptimized
+              width={160}
+              height={96}
+              priority
+            />
+
+
+
+            <h3 className="p-2 text-lg font-medium text-gray-900 dark:text-white">{project.name}</h3>
+            <p className="p-2 text-sm text-gray-500 dark:text-gray-400  flex-1 ">{project.description}</p>
+
+
+
+
+            {(project.storeIcon && project.storeLink) && <div className="flex  justify-center   border-t border-gray-200 dark:border-gray-700 p-1 ">
+
+
+
+              <a href={project.storeLink} target="_blank" rel="noopener noreferrer">
+                <Image src={project.storeIcon}  alt="Store Icon" width={48} height={48} /></a>
+            </div>
+            }
+
+
+
+          </div>
+        ))}
+      </div>
+    </Header>
+  );
+}
+
+export default AllProgects;
+
+
+
+========================================
+Content of app/(routes)/(about me)/page.tsx:
+========================================
+import Image from 'next/image'
+
+
+import Header from '@/app/components/Header'
+
+
+export default function Home() {
+  return (
+
+
+    <Header title='Обо мне'>
+      <div className=' space-y-2  lg:grid lg:grid-cols-3 lg:gap-x-8 lg:space-y-0'>
+
+
+
+
+        <div className='  flex flex-col items-center pt-8'>
+          <Image
+            alt='Picture of Dmitriy Trofimov'
+            src='./me.jpg'
+            className='h-48 w-48 rounded-full object-cover object-top'
+            unoptimized={true}
+            width={192}
+            height={192}
+            priority >
+          </Image>
+
+          <h3 className='pt-4 pb-2 text-2xl font-bold' >Дмитрий Трофимов</h3>
+          <p className='text-gray-500 text-center'>Добрый день, меня зовут Дмитрий <br /> Я <span className='text-teal-500 font-bold'>FullStack </span>разработчик</p>
+
+          <div className='flex pt-6 space-x-5'>
+            <a href="https://github.com/a-dev-mobile" target='_blank'>
+              <svg
+                viewBox="0 0 1024 1024"
+                fill="currentColor"
+                className='w-8 h-8 text-teal-600 hover:text-teal-700'>
+                <path d="M511.6 76.3C264.3 76.2 64 276.4 64 523.5 64 718.9 189.3 885 363.8 946c23.5 5.9 19.9-10.8 19.9-22.2v-77.5c-135.7 15.9-141.2-73.9-150.3-88.9C215 726 171.5 718 184.5 703c30.9-15.9 62.4 4 98.9 57.9 26.4 39.1 77.9 32.5 104 26 5.7-23.5 17.9-44.5 34.7-60.8-140.6-25.2-199.2-111-199.2-213 0-49.5 16.3-95 48.3-131.7-20.4-60.5 1.9-112.3 4.9-120 58.1-5.2 118.5 41.6 123.2 45.3 33-8.9 70.7-13.6 112.9-13.6 42.4 0 80.2 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.3-43.9 2.9 7.7 24.7 58.3 5.5 118 32.4 36.8 48.9 82.7 48.9 132.3 0 102.2-59 188.1-200 212.9a127.5 127.5 0 0138.1 91v112.5c.8 9 0 17.9 15 17.9 177.1-59.7 304.6-227 304.6-424.1 0-247.2-200.4-447.3-447.5-447.3z" />
+              </svg>
+            </a>
+
+            <a href="https://play.google.com/store/apps/developer?id=Dmitry+Trofimov" target='_blank'>
+              <svg
+                fill="currentColor"
+                viewBox="0 0 16 16"
+                className='w-7 h-8 text-teal-600 hover:text-teal-700'
+
+              >
+                <path d="M14.222 9.374c1.037-.61 1.037-2.137 0-2.748L11.528 5.04 8.32 8l3.207 2.96 2.694-1.586zm-3.595 2.116L7.583 8.68 1.03 14.73c.201 1.029 1.36 1.61 2.303 1.055l7.294-4.295zM1 13.396V2.603L6.846 8 1 13.396zM1.03 1.27l6.553 6.05 3.044-2.81L3.333.215C2.39-.341 1.231.24 1.03 1.27z" />
+              </svg>
+            </a>
+
+
+            <a href="https://t.me/dmitriy_tr" target='_blank'>
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className='w-8 h-8 text-teal-600 hover:text-teal-700'
+
+              >
+                <path d="M20.665 3.717l-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l.002.001-.314 4.692c.46 0 .663-.211.921-.46l2.211-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.239-.473-1.8-1.282-1.434z" />
+              </svg>
+
+
+
+            </a>
+
+
+            <a href="https://www.linkedin.com/in/a-dev-mobile/" target='_blank'>
+              <svg
+                viewBox="0 0 1024 1024"
+                fill="currentColor"
+                className='w-8 h-8 text-teal-600 hover:text-teal-700'
+              >
+                <path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zM349.3 793.7H230.6V411.9h118.7v381.8zm-59.3-434a68.8 68.8 0 1168.8-68.8c-.1 38-30.9 68.8-68.8 68.8zm503.7 434H675.1V608c0-44.3-.8-101.2-61.7-101.2-61.7 0-71.2 48.2-71.2 98v188.9H423.7V411.9h113.8v52.2h1.6c15.8-30 54.5-61.7 112.3-61.7 120.2 0 142.3 79.1 142.3 181.9v209.4z" />
+              </svg>
+            </a>
+
+            <a href="https://pub.dev/publishers/wayofdt.com/packages" target='_blank'>
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className='w-7 h-8 text-teal-600 hover:text-teal-700'
+              >
+                <path d="M4.105 4.105S9.158 1.58 11.684.316a3.079 3.079 0 011.481-.315c.766.047 1.677.788 1.677.788L24 9.948v9.789h-4.263V24H9.789l-9-9C.303 14.5 0 13.795 0 13.105c0-.319.18-.818.316-1.105l3.789-7.895zm.679.679v11.787c.002.543.021 1.024.498 1.508L10.204 23h8.533v-4.263L4.784 4.784zm12.055-.678c-.899-.896-1.809-1.78-2.74-2.643-.302-.267-.567-.468-1.07-.462-.37.014-.87.195-.87.195L6.341 4.105l10.498.001z" />
+              </svg>
+            </a>
+
+            <a href="mailto:wayofdt@gmail.com" target='_blank'>
+              <svg
+                viewBox="0 0 1024 1024"
+                fill="currentColor"
+                className='w-8 h-8 text-teal-600 hover:text-teal-700'
+              >
+                <path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-80.8 108.9L531.7 514.4c-7.8 6.1-18.7 6.1-26.5 0L189.6 268.9A7.2 7.2 0 01194 256h648.8a7.2 7.2 0 014.4 12.9z" />
+              </svg>
+            </a>
+          </div>
+
+
+
+        </div>
+        <div className='prose max-w-none prose-lg pt-8 pb-7 dark:prose-invert lg:col-span-2'>
+          <section>
+            <h2 className="text-2xl font-bold mb-5">Образование и начало карьеры:</h2>
+            <p className="mb-3">
+              Официально с 2015 года занимаюсь программированием. Начинал с Python для написания скриптов в сфере машиностроительного оборудования, а затем перешел в мобильную потом одновременно в бэкенд и немного веб-разработку.
+              Имею два высших образования Экономист(Маркетолог) и Инженер-Робототехник.
+
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold mb-5">Текущая позиция и обязанности:</h2>
+            <p className="mb-3">
+              Я занимаю позицию мобильного разработчика в международной IT-компании, специализирующейся на финтехе. Мои ключевые направления работы включают кроссплатформенную разработку на Dart с использованием Flutter и разработку бэкенда на Go, с акцентом на мобильные приложения.
+            </p>
+            <ul className="list-disc pl-5 mb-5">
+              <li>Веду три финансовых проекта в роли старшего разработчика.</li>
+              <li>Осуществляю регулярное ревью кода и публикую/контролирую публикацию приложений в App Store и Google Play и другие stores.</li>
+              <li>Отвечаю за разработку и поддержку корпоративного проекта на Go, обеспечивающего анализ данных в реальном времени и отслеживание UTM меток для отдела маркетинга.</li>
+            </ul>
+          </section>
+
+          <section>
+
+            <section>
+              <h2 className="text-2xl font-bold mb-5">IT опыт:</h2>
+              <ul className="list-disc pl-5 mb-5">
+                <li>Специализация в области кроссплатформенной разработки, с акцентом на использование Flutter.</li>
+                <li>Понимание нативной разработки Android и немного ios.</li>
+                <li>Понимание языков программирования Dart(хорошо) и Go(удовлетворительно).</li>
+                <li>Разработка нескольких десятков микросервисов на Go, включая REST API, SMTP и WebSocket и один gRPC.</li>
+                <li>Для мониторинга использую связку Prometheus/Grafana/Loki/Promtail - это бэкенд или  firebase analytics/crashlytics, если мобильное приложение.</li>
+                <li>Разработка системы для автоматического определения устройства пользователя и управления перенаправлениями на соответствующие страницы загрузки в магазинах приложений.</li>
+                <li>Опыт в отслеживании и анализе UTM-меток для маркетинговых целей в мобильных приложениях.</li>
+              </ul>
+            </section>
+
+
+            <h2 className="text-2xl font-bold mb-5">Личные достижения в сфере IT:</h2>
+            <ul className="list-disc pl-5 mb-5">
+              <li>Разработка и запуск более 10 личных приложений для Google Play и 2 для App Store, суммарно насчитывающих около 50,000 активных пользователей, ориентированных на специалистов машиностроения, с успешной монетизацией наиболее популярных из них.</li>
+              <li>Создание телеграм-бота ProxyFinder на Go для поиска и проверки прокси, с функциями отображения IP, порта, страны, отличающегося высокой скоростью и удобством использования.</li>
+              <li>Разработка уникальной библиотеки на Dart для ускоренного запуска скриптов без необходимости build_runner, значительно сократившая время генерации кода в проектах и опубликованная на Pub.dev.</li>
+              <li>Опыт публикации мобильных приложений в различные магазины приложений и глубокое понимание процесса модерации в них.</li>
+              <li>Владение собственным сервером и доменом с SSL-защитой.</li>
+            </ul>
+
+            <h2 className="text-2xl font-bold mb-5">Личные качества и интересы:</h2>
+            <ul className="list-disc pl-5">
+              <li>Энтузиазм в мобильной разработке, ценя ее производительность и расширенные возможности.</li>
+              <li>Увлечение бэкенд разработкой на Golang, ценя синтаксис, горутины и высокую скорость языка, с активным применением Docker/Docker-compose.</li>
+              <li>Страсть к веб-разработке благодаря ее гибкости в публикации проектов.</li>
+              <li>Постоянное стремление к созданию инновационных и удобных пользовательских решений.</li>
+              <li>Вдохновение от возможности влиять на индустрию и общество через разработку программного обеспечения.</li>
+            </ul>
+
+          </section>
+
+
+        </div>
+      </div></Header>
+
+
+
+  )
+}
+
+
+========================================
+Content of app/components/ThemeButton.tsx:
+========================================
+'use client'
+
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+
+
+
+export default function Themebutton() {
+
+    const { setTheme, resolvedTheme } = useTheme();
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true);
+    }, [])
+
+    if (!mounted) {
+        return null;
+    }
+
+
+
+    return (
+        <button
+            onClick={() => setTheme(resolvedTheme === "dark" ? 'light' : 'dark')}
+            className="bg-teal-500/30 p-2 rounded-lg text-teal-500">
+            {resolvedTheme === "dark" ? (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+            </svg>
+            ) : (<svg xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6">
+                <path strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+            </svg>
+            )}
+
+        </button>)
+
+
+}
+
+========================================
+Content of app/components/Provider.tsx:
+========================================
+'use client'
+
+import { ThemeProvider } from "next-themes";
+import { ReactNode } from "react";
+
+export function Provider({ children }: { children: ReactNode }) {
+    return <ThemeProvider attribute="class">{children}</ThemeProvider>
+}
+
+========================================
+Content of app/components/Header.tsx:
+========================================
+import { ReactNode } from "react";
+
+
+
+
+
+type HeaderProps = {
+    title: string;
+    children?: ReactNode;
+}
+
+const Header: React.FC<HeaderProps> = ({ title, children }) => {
+    return (<div className='divide-y divide-gray-300 dark:divide-gray-700'>
+        <div className='pt-5 pb-8'>
+            <h1 className='text-3xl font-bold '>
+                {title}
+            </h1>
+        </div>
+        {children}
+    </div>)
+}
+export default Header
+
+========================================
+Content of app/components/Navbar.tsx:
+========================================
+'use client'
+
+import { Disclosure } from "@headlessui/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import path from "path";
+import Themebutton from "./ThemeButton";
+import React from "react";
+const NavBar = () => {
+
+    interface NavLinkProps {
+        href: string;
+        label: string;
+    }
+    const [isScrolled, setIsScrolled] = React.useState(false);
+
+    React.useEffect(() => {
+        const handleScroll = () => {
+            // Например, показывать элемент, если страница прокручена более чем на 10px
+            if (window.scrollY > 10) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+
+    
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
+
+    const NavLink: React.FC<NavLinkProps> = ({ href, label }) => {
+
+        const isActive = pathname === href;
+        return (<Link href={href} prefetch className={`${isActive
+            ? 'border-teal-500 h-full inline-flex items-center border-b-2 text-sm font-medium px-2 pt-1'
+            : 'border-transparent hover:text-black  dark:text-gray-300 text-gray-500 h-full inline-flex items-center border-b-2 dark:hover:text-white text-sm px-2 pt-1 '
+            }`}>
+            {label}
+        </Link>);
+
+    }
+    const navLinks = (
+        <>
+          <NavLink href='/' label='Обо мне' />
+          <NavLink href='/pet-projects' label='Личные проекты' />
+         
+        </>
+      );
+    const pathname = usePathname() || '/'
+    return (<Disclosure as='nav' className=''>
+        {({ open }) => (
+            <>
+                <div className="max-w-6xl mx-auto px-1 ">
+                    <div className="flex justify-between h-16">
+                        <div className="flex justify-between w-full">
+                            <div className="flex items-center">
+                                <Link href='/'>
+                                    <h1 className="text-2xl font-medium px-3">
+                                        Dmitriy <span className="text-teal-500">Trofimov</span>
+                                    </h1>
+                                </Link>
+
+                            </div>
+                            <div className="hidden md:flex md:items-center gap-x-5 ">
+
+                            {navLinks}
+                                <div className="ml-2">
+                                    <Themebutton />
+
+
+                                </div>
+                            </div>
+                            <div className=" md:hidden flex items-center gap-1">
+                                <Themebutton />
+                                <Disclosure.Button className='inline-flex text-gray-400 
+                                 hover:text-gray-500
+                                 hover:bg-gray-200
+                                 p-2 rounded-lg
+                                dark:hover:bg-gray-800
+                                
+                                 focus:ring-2 
+                                focus:ring-teal-500'>
+
+                                    {open ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={1.5}
+                                            stroke="currentColor"
+                                            className="w-6 h-6">
+                                            <path strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+
+                                    ) : (<svg xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="w-6 h-6">
+                                        <path strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                    </svg>
+
+                                    )}
+
+
+
+                                </Disclosure.Button>
+
+                            </div>
+                        </div>
+                    </div>
+                    <Disclosure.Panel className={
+                        isScrolled ? 
+                        'md:hidden fixed top-0  w-full z-10 bg-white p-2 dark:bg-black' 
+                        : 'md:hidden '}>
+                        <div className="flex justify-around ">
+
+                        {navLinks}
+
+                        </div>
+
+                    </Disclosure.Panel>
+
+                </div>
+
+            </>
+
+
+
+        )}
+
+
+
+    </Disclosure>);
+}
+
+export default NavBar;
+
+Directory File Count: 20
+
++------------+-------------------------------------------------------------------------------+
+| File Count | Directory                                                                     |
++------------+-------------------------------------------------------------------------------+
+|         10 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app                        |
+|          4 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/components             |
+|          3 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/(routes)               |
+|          1 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/(routes)/work-projects |
+|          1 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/(routes)/pet-projects  |
+|          1 | /home/dmitriy/Documents/DEV/MY_GITHUB/portfolio-ru/app/(routes)/(about me)    |
++------------+-------------------------------------------------------------------------------+
+
+File Character Counts: 25113 characters
+
++-----------------+-------------------------------------+
+| Character Count | File Path                           |
++-----------------+-------------------------------------+
+|            9540 | app/(routes)/(about me)/page.tsx    |
+|            5213 | app/components/Navbar.tsx           |
+|            4427 | app/(routes)/pet-projects/page.tsx  |
+|            1599 | app/components/ThemeButton.tsx      |
+|             921 | app/layout.tsx                      |
+|             722 | package.json                        |
+|             595 | tsconfig.json                       |
+|             459 | app/(routes)/work-projects/page.tsx |
+|             446 | app/components/Header.tsx           |
+|             372 | tailwind.config.ts                  |
+|             258 | Dockerfile                          |
+|             233 | app/components/Provider.tsx         |
+|             206 | next.config.js                      |
+|              82 | postcss.config.js                   |
+|              40 | .eslintrc.json                      |
++-----------------+-------------------------------------+
