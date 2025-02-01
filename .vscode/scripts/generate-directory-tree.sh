@@ -22,9 +22,9 @@ FILE_NAMES=(
     "next.config.js"
     ".eslintrc.json"
     "*.css"
-    "Makefile"
-    "Dockerfile"
-    "nginx.conf"
+    # "Makefile"
+    # "Dockerfile"
+    # "nginx.conf"
 )
 EXCLUDE=(
     "*.g.dart"
@@ -54,8 +54,8 @@ EXCLUDE_STRINGS=(
 )
 LOG_LEVEL="INFO"                      # Уровень логирования (допустимые значения: DEBUG, INFO, WARNING, ERROR, CRITICAL)
 OUTPUT_FILE="directory_structure.log" # Файл для сохранения вывода, если пусто, сохраняется в файл по умолчанию в указанной директории.
-DISPLAY="content"
 DISPLAY="all"                    # Опции: structure, count, content, all (default: all)
+DISPLAY="content"
 # Запуск скрипта с аргументами
 python /home/dmitriy/Documents/DEV/MY_GITHUB/scripts/scripts/personal/generate_directory_tree.py \
 --path "$PROJ_PATH" \
