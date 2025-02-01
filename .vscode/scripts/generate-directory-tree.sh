@@ -22,7 +22,9 @@ FILE_NAMES=(
     "next.config.js"
     ".eslintrc.json"
     "*.css"
+    "Makefile"
     "Dockerfile"
+    "nginx.conf"
 )
 EXCLUDE=(
     "*.g.dart"
