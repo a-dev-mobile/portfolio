@@ -10,12 +10,11 @@
 
 # Когда нужно деплоить:
 # 1. Полное обновление и деплой одной командой
-# make update-deploy
+# make deploy-full
 
 # ИЛИ пошагово:
-
 # 1. Собрать все (Next.js + Docker image)
-# make build-all
+# make build
 
 # 2. Деплой на сервер
 # make deploy
@@ -48,13 +47,19 @@ DOCKER := docker
 # Project Settings
 NODE_VERSION = 20
 BUILD_MODE = production  # Can be 'production' or 'development'
-DEV_PORT = 3000
 
 # Docker Configuration
 IMAGE_NAME = portfolio-nextjs
 IMAGE_TAG = latest
-CONTAINER_NAME = $(IMAGE_NAME)-container
+CONTAINER_NAME = portfolio
 PORT = 8080
+DEV_PORT = 3000
+
+# Server Configuration
+SERVER_USER = dmitriy
+SERVER_HOST = 179.61.237.164
+SERVER_PORT = 22
+DEPLOY_PATH = /home/dmitriy/Documents/DEV/MY_GITHUB/scripts/services/traefik/fi-server
 
 # Artifact Settings
 ARTIFACTS_DIR = artifacts
@@ -190,8 +195,8 @@ status:
 # Deployment Tasks
 # ===========================================
 
-# Update and deploy
-update-deploy: build-all deploy
+# Full deployment process (build + deploy)
+deploy-full: build deploy
 
 # Build everything (Next.js build + Docker image)
 build-all: install
@@ -203,15 +208,42 @@ build-all: install
 # Deploy to production server
 deploy:
 	@echo "Deploying to production server..."
-	@$(DOCKER) save $(IMAGE_NAME):$(IMAGE_TAG) | gzip | ssh -p 22 dmitriy@179.61.237.164 'gunzip | docker load'
-	@ssh -p 22 dmitriy@179.61.237.164 'cd /home/dmitriy/Documents/DEV/MY_GITHUB/scripts/services/traefik/fi-server/ && docker compose down portfolio && docker compose up -d portfolio'
-	@echo "Deployment completed"
+	@echo "Saving and transferring Docker image..."
+	@$(DOCKER) save $(IMAGE_NAME):$(IMAGE_TAG) | gzip | \
+		ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER_HOST) \
+		'gunzip | docker load'
+	@echo "Image transferred successfully"
+	@echo "Updating container on server..."
+	@ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER_HOST) '\
+		cd $(DEPLOY_PATH) && \
+		docker compose stop portfolio && \
+		docker compose rm -f portfolio && \
+		docker compose up -d portfolio && \
+		docker image prune -f'
+	@echo "Deployment completed successfully"
 
 # Restart service on production
 restart-service:
 	@echo "Restarting service on production..."
-	@ssh -p 22 dmitriy@179.61.237.164 'cd /home/dmitriy/Documents/DEV/MY_GITHUB/scripts/services/traefik/fi-server/ && docker compose restart portfolio'
+	@ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER_HOST) '\
+		cd $(DEPLOY_PATH) && \
+		docker compose restart portfolio'
 	@echo "Service restarted"
+
+# Check deployment status
+status-remote:
+	@echo "Checking remote container status..."
+	@ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER_HOST) '\
+		cd $(DEPLOY_PATH) && \
+		docker compose ps portfolio && \
+		echo "\nContainer logs:" && \
+		docker compose logs --tail=50 portfolio'
+
+# View remote logs
+logs-remote:
+	@ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER_HOST) '\
+		cd $(DEPLOY_PATH) && \
+		docker compose logs -f portfolio'
 
 # ===========================================
 # Default and Help Tasks
@@ -227,30 +259,32 @@ help:
 	@echo "Available commands:"
 	@echo ""
 	@echo "Development Commands:"
-	@echo "  init         - Initialize project (Git setup, dependencies)"
-	@echo "  install      - Install Node.js dependencies"
-	@echo "  install-clean- Clean and install all dependencies"
-	@echo "  clean        - Clean build artifacts and dependencies"
-	@echo "  format       - Format code"
-	@echo "  lint         - Run linting"
+	@echo "  init          - Initialize project (Git setup, dependencies)"
+	@echo "  install       - Install Node.js dependencies"
+	@echo "  install-clean - Clean and install all dependencies"
+	@echo "  clean         - Clean build artifacts and dependencies"
+	@echo "  format        - Format code"
+	@echo "  lint          - Run linting"
 	@echo ""
 	@echo "Docker Commands:"
-	@echo "  build        - Build production Docker image"
-	@echo "  dev          - Start development server with hot reload"
-	@echo "  run          - Run Docker container"
-	@echo "  stop         - Stop running container"
-	@echo "  clean-docker - Remove all Docker resources"
-	@echo "  logs         - Show container logs"
-	@echo "  status       - Show container status"
+	@echo "  build         - Build production Docker image"
+	@echo "  dev           - Start development server with hot reload"
+	@echo "  run           - Run Docker container"
+	@echo "  stop          - Stop running container"
+	@echo "  clean-docker  - Remove all Docker resources"
+	@echo "  logs          - Show container logs"
+	@echo "  status        - Show container status"
 	@echo ""
 	@echo "Deployment Commands:"
-	@echo "  update-deploy   - Build and deploy to production"
-	@echo "  build-all      - Build Next.js app and Docker image"
-	@echo "  deploy         - Deploy to production server"
+	@echo "  deploy-full    - Build and deploy to production"
+	@echo "  build-all     - Build Next.js app and Docker image"
+	@echo "  deploy        - Deploy to production server"
 	@echo "  restart-service- Restart service on production"
+	@echo "  status-remote - Check remote container status"
+	@echo "  logs-remote   - View remote container logs"
 	@echo ""
 	@echo "Environment:"
 	@echo "  NODE_VERSION = $(NODE_VERSION)"
 	@echo "  BUILD_MODE   = $(BUILD_MODE)"
-	@echo "  PORT        = $(PORT)"
-	@echo "  DEV_PORT    = $(DEV_PORT)"
+	@echo "  PORT         = $(PORT)"
+	@echo "  DEV_PORT     = $(DEV_PORT)"
