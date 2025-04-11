@@ -11,16 +11,22 @@ export const NavLink: React.FC<NavLinkProps> = ({ href, label, exact = true }) =
   
   return (
     <Link 
-      href={href}
+      href={href as any} // Type assertion to fix the type compatibility issue
       className={cn(
-        'h-full inline-flex items-center border-b-2 text-sm font-medium px-2 pt-1 transition-colors',
+        'relative h-full inline-flex items-center text-sm font-medium px-2 pt-1 transition-colors group',
         isActive
-          ? 'border-teal-500 text-gray-900 dark:text-white'
-          : 'border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+          ? 'text-gray-900 dark:text-white'
+          : 'text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
       )}
       aria-current={isActive ? 'page' : undefined}
     >
       {label}
+      <span 
+        className={cn(
+          'absolute bottom-0 inset-x-0 h-0.5 bg-teal-500 transition-all duration-300',
+          isActive ? 'w-full' : 'w-0'
+        )}
+      />
     </Link>
   )
 }

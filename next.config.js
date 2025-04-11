@@ -9,7 +9,9 @@ const nextConfig = {
   },
   experimental: {
     typedRoutes: true
-  }
+  },
+  // Disable source maps
+  productionBrowserSourceMaps: false
 };
 
 module.exports = nextConfig;
