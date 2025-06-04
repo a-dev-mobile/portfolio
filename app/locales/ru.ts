@@ -1,4 +1,4 @@
-import { Translations } from "./i18n";
+import { Translations } from '../types/i18n';
 
 export const ru: Translations = {
   navigation: {

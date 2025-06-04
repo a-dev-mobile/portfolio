@@ -1,3 +1,5 @@
+import { Translations } from '../types/i18n';
+
 export const en: Translations = {
   navigation: {
     about: 'About Me',
