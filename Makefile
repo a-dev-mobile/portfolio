@@ -1,39 +1,12 @@
-# При первом открытии проекта после клонирования:
-# 1. Инициализация проекта и установка зависимостей
-# make init
-
-# 2. Проверка работоспособности в dev режиме
-# make dev
-
-# Если нужно очистить все и начать заново:
-# make refresh-all
-
-# Когда нужно деплоить:
-# 1. Полное обновление и деплой одной командой
-# make deploy-full
-
-# ИЛИ пошагово:
-# 1. Собрать все (Next.js + Docker image)
-# make build
-
-# 2. Деплой на сервер
-# make deploy
-
-# Если нужно только перезапустить сервис на продакшене:
-# make restart-service
-
-# Дополнительные полезные команды:
-# Проверка статуса контейнера
-# make status
-
-# Просмотр логов
-# make logs
-
-# Остановка контейнера
-# make stop
-
-# Полная очистка Docker ресурсов
-# make clean-docker
+# Portfolio Next.js Project Makefile
+# Primary commands:
+# make init - Initialize the project after cloning
+# make build - Build the Docker image
+# make run - Run the container
+# make dev - Run in development mode with hot reload
+# make clean - Clean up project files and dependencies
+# make clean-docker - Clean up Docker resources
+# make tag-and-push TAG=X.Y.Z - Update version, commit, tag and push
 
 # ===========================================
 # Configuration Variables
@@ -43,6 +16,7 @@
 NODE := node
 NPM := npm
 DOCKER := docker
+GIT := git
 
 # Project Settings
 NODE_VERSION = 20
@@ -55,65 +29,26 @@ CONTAINER_NAME = portfolio
 PORT = 8080
 DEV_PORT = 3000
 
-# Server Configuration
-SERVER_USER = dmitriy
-SERVER_HOST = 179.61.237.164
-SERVER_PORT = 22
-DEPLOY_PATH = /home/dmitriy/Documents/DEV/MY_GITHUB/scripts/services/traefik/fi-server
-
-# Artifact Settings
-ARTIFACTS_DIR = artifacts
-DOCKER_TAR = $(ARTIFACTS_DIR)/$(IMAGE_NAME)-$(IMAGE_TAG).tar
-DOCKER_COMPRESSED = $(ARTIFACTS_DIR)/$(IMAGE_NAME)-$(IMAGE_TAG).tar.gz
-
 # ===========================================
 # Development Tasks
 # ===========================================
 
-.PHONY: dev init get clean format lint build-all deploy update-deploy restart-service status logs stop clean-docker
+.PHONY: dev init install clean build run stop status logs clean-docker help update-version commit-version tag-version tag-and-push check-git-status confirm-tag
 
 # Initialize project
-init: git-setup install
-
-# Setup Git
-git-setup:
-	git pull --rebase=false
+init: install
 
 # Dependencies management
 install:
 	$(NPM) install
 
-install-clean: clean install
-
-upgrade:
-	$(NPM) update
-
-upgrade-all: clean upgrade install
-
-# Cleaning tasks
 clean:
 	rm -rf .next out
 	rm -rf node_modules
 
-cache-clean:
-	$(NPM) cache clean --force
-
-refresh-all: cache-clean clean install
-
-# Code maintenance
-lint:
-	$(NPM) run lint
-
-format:
-	$(NPM) run format
-
 # ===========================================
 # Docker Tasks
 # ===========================================
-
-# Create artifacts directory
-$(ARTIFACTS_DIR):
-	@mkdir -p $(ARTIFACTS_DIR)
 
 # Build Docker image
 build:
@@ -141,22 +76,6 @@ dev:
 		$(IMAGE_NAME):dev \
 		npm run dev -- -p $(DEV_PORT)
 
-# Docker image management
-save: $(ARTIFACTS_DIR)
-	@echo "Saving Docker image to $(DOCKER_TAR)..."
-	@$(DOCKER) save $(IMAGE_NAME):$(IMAGE_TAG) > $(DOCKER_TAR)
-	@echo "Docker image saved successfully"
-
-compress: save
-	@echo "Compressing Docker image..."
-	@gzip -f $(DOCKER_TAR)
-	@echo "Docker image compressed to $(DOCKER_COMPRESSED)"
-
-load:
-	@echo "Loading Docker image from $(DOCKER_COMPRESSED)..."
-	@gunzip -c $(DOCKER_COMPRESSED) | docker load
-	@echo "Docker image loaded successfully"
-
 # Container management
 run:
 	@echo "Running Docker container..."
@@ -181,7 +100,6 @@ clean-docker:
 	@$(DOCKER) ps -a -q -f name=$(CONTAINER_NAME)-dev | xargs -r docker rm -f || true
 	@$(DOCKER) images $(IMAGE_NAME) -q | xargs -r docker rmi -f || true
 	@$(DOCKER) volume rm -f portfolio-nextjs-node-modules portfolio-nextjs-next-cache || true
-	@rm -rf $(ARTIFACTS_DIR)
 	@echo "Cleanup completed"
 
 logs:
@@ -191,97 +109,115 @@ status:
 	@echo "Container status:"
 	@$(DOCKER) ps -a --filter name=$(CONTAINER_NAME)
 
-	# ===========================================
-# Deployment Tasks
+# ===========================================
+# Version and Release Management
 # ===========================================
 
-# Full deployment process (build + deploy)
-deploy-full: build deploy
+# Check for uncommitted changes
+check-git-status:
+	@if [ -n "$$($(GIT) status --porcelain)" ]; then \
+		echo "⚠️ ВНИМАНИЕ: В репозитории есть незафиксированные изменения:"; \
+		$(GIT) status --short; \
+		echo ""; \
+		read -p "Продолжить создание тега без фиксации изменений? (y/n) " answer; \
+		if [ "$$answer" != "y" ]; then \
+			echo "Операция отменена пользователем"; \
+			exit 1; \
+		fi; \
+		echo "Продолжаем по запросу пользователя..."; \
+	else \
+		echo "✅ В репозитории нет незафиксированных изменений"; \
+	fi
 
-# Build everything (Next.js build + Docker image)
-build-all: install
-	@echo "Building Next.js app..."
-	@$(NPM) run build
-	@echo "Building Docker image..."
-	@$(DOCKER) build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+# Confirm tag creation
+confirm-tag:
+	@if [ -z "$(TAG)" ]; then \
+		echo "Error: specify TAG variable, e.g.: make tag-and-push TAG=1.0.0"; \
+		exit 1; \
+	fi
+	@echo "Вы собираетесь создать и запушить тег $(TAG)"
+	@read -p "Подтвердите действие (y/n): " answer; \
+	if [ "$$answer" != "y" ]; then \
+		echo "Операция отменена пользователем"; \
+		exit 1; \
+	fi
 
-# Deploy to production server
-deploy:
-	@echo "Deploying to production server..."
-	@echo "Saving and transferring Docker image..."
-	@$(DOCKER) save $(IMAGE_NAME):$(IMAGE_TAG) | gzip | \
-		ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER_HOST) \
-		'gunzip | docker load'
-	@echo "Image transferred successfully"
-	@echo "Updating container on server..."
-	@ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER_HOST) '\
-		cd $(DEPLOY_PATH) && \
-		docker compose stop portfolio && \
-		docker compose rm -f portfolio && \
-		docker compose up -d portfolio && \
-		docker image prune -f'
-	@echo "Deployment completed successfully"
+# Update version in package.json
+update-version:
+	@if [ -z "$(TAG)" ]; then \
+		echo "Error: specify TAG variable, e.g.: make update-version TAG=1.0.0"; \
+		exit 1; \
+	fi
+	@echo "Updating version in package.json to $(TAG)..."
+	@sed -i 's/"version": ".*"/"version": "$(TAG)"/' package.json
+	@echo "Updated version in package.json:"
+	@grep "\"version\"" package.json
 
-# Restart service on production
-restart-service:
-	@echo "Restarting service on production..."
-	@ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER_HOST) '\
-		cd $(DEPLOY_PATH) && \
-		docker compose restart portfolio'
-	@echo "Service restarted"
+# Commit version changes
+commit-version:
+	@if [ -z "$(TAG)" ]; then \
+		echo "Error: specify TAG variable, e.g.: make commit-version TAG=1.0.0"; \
+		exit 1; \
+	fi
+	@echo "Committing version changes for $(TAG)..."
+	@$(GIT) add package.json
+	@$(GIT) commit -m "Update version to $(TAG)"
+	@echo "Changes committed."
 
-# Check deployment status
-status-remote:
-	@echo "Checking remote container status..."
-	@ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER_HOST) '\
-		cd $(DEPLOY_PATH) && \
-		docker compose ps portfolio && \
-		echo "\nContainer logs:" && \
-		docker compose logs --tail=50 portfolio'
+# Create and push tag
+tag-version:
+	@if [ -z "$(TAG)" ]; then \
+		echo "Error: specify TAG variable, e.g.: make tag-version TAG=1.0.0"; \
+		exit 1; \
+	fi
+	@echo "Creating and pushing tag $(TAG)..."
+	@$(GIT) tag -a $(TAG) -m "Release $(TAG)"
+	@$(GIT) push origin $(TAG)
+	@echo "Tag $(TAG) created and pushed."
 
-# View remote logs
-logs-remote:
-	@ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER_HOST) '\
-		cd $(DEPLOY_PATH) && \
-		docker compose logs -f portfolio'
+# Complete process: update version, commit, tag and push
+tag-and-push: check-git-status confirm-tag
+	@if [ -z "$(TAG)" ]; then \
+		echo "Error: specify TAG variable, e.g.: make tag-and-push TAG=1.0.0"; \
+		exit 1; \
+	fi
+	@echo "Starting complete version update and tag process for $(TAG)..."
+	@$(MAKE) update-version TAG=$(TAG)
+	@$(MAKE) commit-version TAG=$(TAG)
+	@$(MAKE) tag-version TAG=$(TAG)
+	@$(GIT) push
+	@echo "=== All done! ==="
+	@echo "Version updated to $(TAG), changes committed, tagged and pushed."
+	@echo "Pipeline status can be checked at GitLab CI/CD"
 
 # ===========================================
-# Default and Help Tasks
+# Help Task
 # ===========================================
-
-.PHONY: all help
 
 # Default target
-all: build save compress
-
-# Help
 help:
 	@echo "Available commands:"
 	@echo ""
 	@echo "Development Commands:"
-	@echo "  init          - Initialize project (Git setup, dependencies)"
-	@echo "  install       - Install Node.js dependencies"
-	@echo "  install-clean - Clean and install all dependencies"
-	@echo "  clean         - Clean build artifacts and dependencies"
-	@echo "  format        - Format code"
-	@echo "  lint          - Run linting"
+	@echo "  init             - Initialize project (install dependencies)"
+	@echo "  install          - Install Node.js dependencies"
+	@echo "  clean            - Clean build artifacts and dependencies"
 	@echo ""
 	@echo "Docker Commands:"
-	@echo "  build         - Build production Docker image"
-	@echo "  dev           - Start development server with hot reload"
-	@echo "  run           - Run Docker container"
-	@echo "  stop          - Stop running container"
-	@echo "  clean-docker  - Remove all Docker resources"
-	@echo "  logs          - Show container logs"
-	@echo "  status        - Show container status"
+	@echo "  build            - Build production Docker image"
+	@echo "  dev              - Start development server with hot reload"
+	@echo "  run              - Run Docker container"
+	@echo "  stop             - Stop running container"
+	@echo "  clean-docker     - Remove all Docker resources"
+	@echo "  logs             - Show container logs"
+	@echo "  status           - Show container status"
 	@echo ""
-	@echo "Deployment Commands:"
-	@echo "  deploy-full    - Build and deploy to production"
-	@echo "  build-all     - Build Next.js app and Docker image"
-	@echo "  deploy        - Deploy to production server"
-	@echo "  restart-service- Restart service on production"
-	@echo "  status-remote - Check remote container status"
-	@echo "  logs-remote   - View remote container logs"
+	@echo "Version and Release Commands:"
+	@echo "  update-version   - Update version in package.json (e.g., make update-version TAG=1.0.0)"
+	@echo "  commit-version   - Commit version changes (e.g., make commit-version TAG=1.0.0)"
+	@echo "  tag-version      - Create and push a Git tag (e.g., make tag-version TAG=1.0.0)"
+	@echo "  tag-and-push     - Complete process: update version, commit, tag and push (e.g., make tag-and-push TAG=1.0.0)"
+	@echo "  docker-push      - Manually build and push Docker image (e.g., make docker-push TAG=1.0.0)"
 	@echo ""
 	@echo "Environment:"
 	@echo "  NODE_VERSION = $(NODE_VERSION)"

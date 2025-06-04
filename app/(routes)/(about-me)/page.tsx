@@ -86,7 +86,7 @@ export default function Home() {
         </div>
         <div className="prose max-w-none prose-lg pt-8 pb-7 dark:prose-invert lg:col-span-2">
           <section>
-            <h2 className="text-2xl font-bold mb-5">О себе и образовании:</h2>
+            <h2 className="text-2xl font-bold mb-5">О_себе и образовании:</h2>
             <p className="mb-3">
               Я Flutter (FullStack) разработчик с более чем 3-летним опытом в мобильной и веб-разработке. Официально с 2015 года занимаюсь программированием, начинал с Python для машиностроительного оборудования.
             </p>
