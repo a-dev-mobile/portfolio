@@ -1,4 +1,7 @@
+'use client'
+
 import Header from '../../components/Header'
+import { useTranslation } from '../../hooks/useTranslation'
 
 type Experience = {
   company: string;
@@ -10,68 +13,45 @@ type Experience = {
 };
 
 const ExperiencePage = () => {
+  const { t } = useTranslation()
+
   const experiences: Experience[] = [
     {
-      company: "МТС Диджитал",
-      position: "Flutter (FullStack) разработчик",
-      period: "2023 - настоящее время",
-      description: "Работа над ключевыми мобильными и веб-проектами для внутренних нужд компании МТС.",
-      achievements: [
-        "Участие в разработке мобильного приложения «Мой РТК» для сотрудников розничной сети МТС",
-        "Разработка мобильного приложения «ОПЕРАТОР+» для операторов поддержки МТС",
-        "Создание и поддержка веб-сервиса «RETAILIQA - Контроль качества» для аудита розничной сети",
-        "Внедрение CI/CD с использованием Kubernetes и Kustomize для оптимизации процесса разработки",
-        "Разработка микросервисной архитектуры с использованием Rust и C#"
-      ],
+      company: t.experience.mts.company,
+      position: t.experience.mts.position,
+      period: t.experience.mts.period,
+      description: t.experience.mts.description,
+      achievements: t.experience.mts.achievements,
       technologies: ["Flutter", "Dart", "Rust", "C#", "PostgreSQL", "Clickhouse", "Kubernetes", "Docker", "Firebase"]
     },
     {
-      company: "Aventus IT",
-      position: "Flutter developer",
-      period: "Декабрь 2021 - 2023",
-      description: "Работа в международной продуктовой IT-компании, разработка мобильных приложений с использованием Flutter (Android/iOS) в сфере Fintech.",
-      achievements: [
-        "Работа в международной продуктовой IT-компании над мобильными приложениями на Flutter",
-        "Разработка и поддержка кроссплатформенных финансовых приложений для Android и iOS",
-        "Интеграция платежных систем и аналитических инструментов",
-        "Внедрение CI/CD процессов для автоматизации сборки и тестирования",
-        "Применение архитектурных паттернов BLoC, Provider, GetIt для поддержки чистой архитектуры",
-        "Взаимодействие с REST API и WebSocket для обеспечения актуальности данных в реальном времени"
-      ],
+      company: t.experience.aventus.company,
+      position: t.experience.aventus.position,
+      period: t.experience.aventus.period,
+      description: t.experience.aventus.description,
+      achievements: t.experience.aventus.achievements,
       technologies: ["Flutter", "Dart", "Firebase", "REST API", "PostgreSQL", "Git", "CI/CD", "BLoC", "GetIt"]
     },
     {
-      company: "Работа фрилансером",
-      position: "Android / Flutter разработчик",
-      period: "Октябрь 2019 - Декабрь 2021",
-      description: "Разработка мобильных приложений под Android и iOS с использованием Flutter и нативного Android SDK.",
-      achievements: [
-        "Разработка более 10 мобильных приложений для клиентов из различных сфер деятельности",
-        "Создание и публикация личных приложений в Google Play и App Store",
-        "Интеграция с различными API и сервисами третьих сторон",
-        "Оптимизация производительности приложений и улучшение пользовательского опыта",
-        "Внедрение новых технологий и лучших практик в процесс разработки"
-      ],
+      company: t.experience.freelance.company,
+      position: t.experience.freelance.position,
+      period: t.experience.freelance.period,
+      description: t.experience.freelance.description,
+      achievements: t.experience.freelance.achievements,
       technologies: ["Flutter", "Dart", "Android SDK", "Java", "Kotlin", "SQLite", "Firebase", "REST API"]
     },
     {
-      company: "Машиностроительные предприятия",
-      position: "Ведущий инженер-программист",
-      period: "Сентябрь 2011 - Декабрь 2021",
-      description: "Программирование для машиностроительного многоосевого оборудования, управление движущимися частями, анализ и верификация управляющих программ.",
-      achievements: [
-        "Разработка и оптимизация программ для ЧПУ-оборудования с использованием G-кода",
-        "Создание и поддержка технической документации и чертежей",
-        "Автоматизация процессов с помощью Python-скриптов",
-        "Внедрение системы контроля качества для снижения брака",
-        "Обучение персонала работе с новым оборудованием и программным обеспечением"
-      ],
+      company: t.experience.engineering.company,
+      position: t.experience.engineering.position,
+      period: t.experience.engineering.period,
+      description: t.experience.engineering.description,
+      achievements: t.experience.engineering.achievements,
       technologies: ["G-code (RS-274)", "Python", "CAD/CAM системы", "3D моделирование", "Технический анализ"]
     }
   ];
 
   return (
-    <Header title="Профессиональный опыт">
+    <Header title={t.experience.title}>
       <div className="py-8">
         <div className="relative border-l border-gray-300 dark:border-gray-700 ml-3">
           {experiences.map((exp, index) => (
@@ -95,7 +75,7 @@ const ExperiencePage = () => {
                 {exp.description}
               </p>
               
-              <h5 className="font-semibold mb-2">Ключевые достижения:</h5>
+              <h5 className="font-semibold mb-2">{t.experience.achievements}</h5>
               <ul className="list-disc pl-5 mb-4 space-y-1 text-gray-600 dark:text-gray-300">
                 {exp.achievements.map((achievement, i) => (
                   <li key={i}>{achievement}</li>

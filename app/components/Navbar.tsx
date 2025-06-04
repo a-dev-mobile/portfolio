@@ -6,20 +6,23 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { NavLink } from './NavLink'
 import ThemeButton from './ThemeButton'
+import { LanguageSwitch } from './LanguageSwitch'
+import { useTranslation } from '../hooks/useTranslation'
 import { cn } from '../lib/utils'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-
-const navItems = [
-    { href: '/', label: 'Обо мне' },
-    { href: '/skills', label: 'Навыки' },
-    { href: '/experience', label: 'Опыт работы' },
-    { href: '/work-projects', label: 'Рабочие проекты' },
-    { href: '/pet-projects', label: 'Личные проекты' },
-];
 
 export default function NavBar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
+  const { t } = useTranslation()
+
+  const navItems = [
+    { href: '/', label: t.navigation.about },
+    { href: '/skills', label: t.navigation.skills },
+    { href: '/experience', label: t.navigation.experience },
+    { href: '/work-projects', label: t.navigation.workProjects },
+    { href: '/pet-projects', label: t.navigation.petProjects },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,10 +56,14 @@ export default function NavBar() {
                 {navItems.map((item) => (
                   <NavLink key={item.href} {...item} />
                 ))}
-                <ThemeButton />
+                <div className="flex items-center space-x-3">
+                  <LanguageSwitch />
+                  <ThemeButton />
+                </div>
               </div>
 
               <div className="flex md:hidden items-center gap-2">
+                <LanguageSwitch />
                 <ThemeButton />
                 <Disclosure.Button 
                   className={cn(

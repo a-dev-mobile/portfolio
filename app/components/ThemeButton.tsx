@@ -2,13 +2,12 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { useTranslation } from "../hooks/useTranslation";
 
-
-
-export default function Themebutton() {
-
+export default function ThemeButton() {
     const { setTheme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false)
+    const { t } = useTranslation();
 
     useEffect(() => {
         setMounted(true);
@@ -22,7 +21,7 @@ export default function Themebutton() {
         <button
             onClick={() => setTheme(resolvedTheme === "dark" ? 'light' : 'dark')}
             className="bg-teal-500/30 p-2 rounded-lg text-teal-600 dark:text-teal-400 hover:bg-teal-500/40 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-            aria-label={resolvedTheme === "dark" ? "Включить светлую тему" : "Включить темную тему"}
+            aria-label={resolvedTheme === "dark" ? t.theme.light : t.theme.dark}
         >
             {resolvedTheme === "dark" ? (
                 <svg 

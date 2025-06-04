@@ -1,7 +1,12 @@
+// components/Footer.tsx
+'use client'
+
 import Link from 'next/link'
+import { useTranslation } from '../hooks/useTranslation'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
+  const { t } = useTranslation()
   
   return (
     <footer className="bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 py-6">
@@ -12,19 +17,19 @@ const Footer = () => {
               Dmitriy <span className="text-teal-500">Trofimov</span>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Full Stack Developer
+              {t.footer.role}
             </p>
           </div>
           
           <nav className="flex space-x-6 mb-4 md:mb-0">
             <Link href="/" className="text-sm text-gray-500 hover:text-teal-600 dark:text-gray-400 dark:hover:text-teal-500 transition-colors">
-              Обо мне
+              {t.navigation.about}
             </Link>
             <Link href="/skills" className="text-sm text-gray-500 hover:text-teal-600 dark:text-gray-400 dark:hover:text-teal-500 transition-colors">
-              Навыки
+              {t.navigation.skills}
             </Link>
             <Link href="/experience" className="text-sm text-gray-500 hover:text-teal-600 dark:text-gray-400 dark:hover:text-teal-500 transition-colors">
-              Опыт работы
+              {t.navigation.experience}
             </Link>
           </nav>
           
@@ -70,7 +75,7 @@ const Footer = () => {
         
         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            © {currentYear} Dmitriy Trofimov. Все права защищены.
+            © {currentYear} Dmitriy Trofimov. {t.footer.rights}
           </p>
         </div>
       </div>

@@ -1,14 +1,14 @@
+'use client'
+
 import Image from 'next/image'
-
-
 import Header from '../../components/Header'
-
+import { useTranslation } from '../../hooks/useTranslation'
 
 export default function Home() {
+  const { t } = useTranslation()
+
   return (
-
-
-    <Header title='Обо мне...'>
+    <Header title={t.about.title}>
       <div className='space-y-2 lg:grid lg:grid-cols-3 lg:gap-x-8 lg:space-y-0'>
         <div className='flex flex-col items-center pt-8'>
           <Image
@@ -18,11 +18,15 @@ export default function Home() {
             unoptimized={true}
             width={192}
             height={192}
-            priority >
-          </Image>
+            priority 
+          />
 
-          <h3 className='pt-4 pb-2 text-2xl font-bold'>Дмитрий Трофимов</h3>
-          <p className='text-gray-500 text-center'>Flutter (FullStack) разработчик <br /> С опытом <span className='text-teal-500 font-bold'>более 3-х лет</span></p>
+          <h3 className='pt-4 pb-2 text-2xl font-bold'>{t.about.name}</h3>
+          <p className='text-gray-500 text-center'>
+            {t.about.role} <br /> 
+            <span className='text-teal-500 font-bold'>{t.about.yearsExperience}</span>
+          </p>
+          
           <div className='flex pt-6 space-x-5'>
             <a href="https://github.com/a-dev-mobile" target='_blank' aria-label="GitHub">
               <svg
@@ -84,9 +88,10 @@ export default function Home() {
             </a>
           </div>
         </div>
+        
         <div className="prose max-w-none prose-lg pt-8 pb-7 dark:prose-invert lg:col-span-2">
           <section>
-            <h2 className="text-2xl font-bold mb-5">О_себе и образовании:</h2>
+            <h2 className="text-2xl font-bold mb-5">{t.about.aboutEducation}</h2>
             <p className="mb-3">
               Я Flutter (FullStack) разработчик с более чем 3-летним опытом в мобильной и веб-разработке. Официально с 2015 года занимаюсь программированием, начинал с Python для машиностроительного оборудования.
             </p>
@@ -94,61 +99,55 @@ export default function Home() {
               <strong>Образование:</strong>
             </p>
             <ul className="list-disc pl-5 mb-3">
-              <li>НИУ ИТМО, Санкт-Петербург (2021) — Системы управления и робототехники, Приборостроение, магистр техники и технологий</li>
-              <li>Филиал Института менеджмента, маркетинга и финансов, Липецк (2011) — Делового администрирования, Маркетинг</li>
-              <li>Елецкий Промышленно-экономический техникум (2006) — Технология машиностроения, Техник-технолог</li>
+              <li>{t.about.education.university}</li>
+              <li>{t.about.education.college}</li>
+              <li>{t.about.education.techSchool}</li>
             </ul>
             <p className="mb-3">
-              <strong>Курсы и повышение квалификации:</strong>
+              <strong>{t.about.courses.title}</strong>
             </p>
             <ul className="list-disc pl-5 mb-3">
-              <li>ESPRIT Training (2013) — DP Technology Europe, г. Санкт-Петербург, Программист CAM системы</li>
-              <li>«Разработка и внедрение новых технологий для машиностроения» (2012) — «Научно-технический испытательный центр «НЕОТЕСТ», г. Липецк</li>
+              <li>{t.about.courses.esprit}</li>
+              <li>{t.about.courses.technologies}</li>
             </ul>
           </section>
+          
           <section>
-            <h2 className="text-2xl font-bold mb-5">Текущая позиция:</h2>
-            <p className="mb-3">
-              В настоящее время работаю Flutter-разработчиком в МТС Диджитал, где занимаюсь мобильными и веб-приложениями, используя Flutter, C# и Rust. До этого работал в международной продуктовой IT-компании Aventus IT в сфере Fintech. Подробнее о моих проектах вы можете узнать на моем сайте <a href="https://wayofdt.com/portfolio-ru/" className="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300 underline">wayofdt.com/portfolio-ru/</a>
-            </p>
+            <h2 className="text-2xl font-bold mb-5">{t.about.currentPosition}</h2>
+            <p className="mb-3">{t.about.currentWork.description}</p>
             <ul className="list-disc pl-5 mb-5">
-              <li>Разрабатываю кроссплатформенные приложения с использованием Flutter и Dart</li>
-              <li>Работаю с Firebase, PostgreSQL и различными API для создания полнофункциональных приложений</li>
-              <li>Применяю архитектурные паттерны BLoC, Provider, GetIt для поддержки чистого и масштабируемого кода</li>
-              <li>Интегрирую различные платежные системы и аналитические инструменты</li>
+              {t.about.currentWork.responsibilities.map((responsibility, index) => (
+                <li key={index}>{responsibility}</li>
+              ))}
             </ul>
           </section>
+          
           <section>
-            <h2 className="text-2xl font-bold mb-5">Опыт в IT:</h2>
+            <h2 className="text-2xl font-bold mb-5">{t.about.itExperience}</h2>
             <ul className="list-disc pl-5 mb-5">
-              <li>Более 3 лет опыта в Flutter-разработке для Android и iOS</li>
-              <li>Опыт работы с бэкендом на Go, C# и основами Rust</li>
-              <li>Разработка и поддержка REST API</li>
-              <li>Работа с базами данных: PostgreSQL, MongoDB, SQLite, Firebase</li>
-              <li>Контейнеризация с Docker и основы Kubernetes</li>
-              <li>CI/CD и DevOps практики для автоматизации разработки</li>
-              <li>Опыт работы с Git, включая GitFlow и различные стратегии ветвления</li>
-              <li>Опыт публикации приложений в Google Play и App Store</li>
-              <li>Знание английского языка на уровне B2 (Средне-продвинутый)</li>
+              <li>{t.about.experience.years}</li>
+              {t.about.experience.technologies.map((tech, index) => (
+                <li key={index}>{tech}</li>
+              ))}
             </ul>
           </section>
+          
           <section>
-            <h2 className="text-2xl font-bold mb-5">Личные проекты:</h2>
+            <h2 className="text-2xl font-bold mb-5">{t.about.personalProjects}</h2>
             <ul className="list-disc pl-5 mb-5">
-              <li>Разработка более 10 приложений, опубликованных в Google Play с суммарно более 50,000 установок</li>
-              <li>Создание технических приложений для машиностроения и инженерных расчетов</li>
-              <li>Разработка и поддержка Telegram-бота на Go</li>
-              <li>Публикация библиотек и пакетов на Pub.dev</li>
+              <li>{t.about.projects.apps}</li>
+              <li>{t.about.projects.technical}</li>
+              <li>{t.about.projects.telegram}</li>
+              <li>{t.about.projects.packages}</li>
             </ul>
           </section>
+          
           <section>
-            <h2 className="text-2xl font-bold mb-5">Личные качества:</h2>
+            <h2 className="text-2xl font-bold mb-5">{t.about.personalQualities}</h2>
             <ul className="list-disc pl-5">
-              <li>Постоянное стремление к обучению и освоению новых технологий</li>
-              <li>Внимание к деталям и ориентация на качество кода</li>
-              <li>Способность быстро адаптироваться к изменяющимся требованиям</li>
-              <li>Опыт работы в удаленных и распределенных командах</li>
-              <li>Умение работать самостоятельно и эффективно управлять своим временем</li>
+              {t.about.qualities.map((quality, index) => (
+                <li key={index}>{quality}</li>
+              ))}
             </ul>
           </section>
         </div>

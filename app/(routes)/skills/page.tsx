@@ -1,14 +1,19 @@
+'use client'
+
 import Header from '../../components/Header'
+import { useTranslation } from '../../hooks/useTranslation'
 import { cn } from '../../lib/utils'
 
 type Skill = {
   name: string;
-  level: number; // 1-10
+  level: number;
   category: 'frontend' | 'backend' | 'mobile' | 'devops' | 'tools';
   icon?: string;
 };
 
 const SkillsPage = () => {
+  const { t } = useTranslation()
+
   const skills: Skill[] = [
     // Мобильная разработка
     { name: 'Flutter', level: 9, category: 'mobile' },
@@ -56,11 +61,11 @@ const SkillsPage = () => {
 
   // Группируем навыки по категориям
   const categories = {
-    mobile: { title: 'Мобильная разработка', skills: skills.filter(s => s.category === 'mobile') },
-    backend: { title: 'Backend разработка', skills: skills.filter(s => s.category === 'backend') },
-    frontend: { title: 'Frontend разработка', skills: skills.filter(s => s.category === 'frontend') },
-    devops: { title: 'DevOps', skills: skills.filter(s => s.category === 'devops') },
-    tools: { title: 'Инструменты', skills: skills.filter(s => s.category === 'tools') },
+    mobile: { title: t.skills.categories.mobile, skills: skills.filter(s => s.category === 'mobile') },
+    backend: { title: t.skills.categories.backend, skills: skills.filter(s => s.category === 'backend') },
+    frontend: { title: t.skills.categories.frontend, skills: skills.filter(s => s.category === 'frontend') },
+    devops: { title: t.skills.categories.devops, skills: skills.filter(s => s.category === 'devops') },
+    tools: { title: t.skills.categories.tools, skills: skills.filter(s => s.category === 'tools') },
   };
 
   const getLevelColor = (level: number) => {
@@ -71,7 +76,7 @@ const SkillsPage = () => {
   };
 
   return (
-    <Header title="Профессиональные навыки">
+    <Header title={t.skills.title}>
       <div className="py-8 space-y-12">
         {Object.entries(categories).map(([key, category]) => (
           <div key={key} className="space-y-4">
